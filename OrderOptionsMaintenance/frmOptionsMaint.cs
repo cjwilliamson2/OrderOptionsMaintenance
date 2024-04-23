@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using OrderOptionsMaintenance.Models.DataLayer;
+
 namespace OrderOptionsMaintenance
 {
     public partial class frmOptionsMaint : Form
@@ -7,16 +10,37 @@ namespace OrderOptionsMaintenance
             InitializeComponent();
         }
 
+        private MMABooksContext context = new();
+        OrderOption options = null;
+
         private void frmOptionsMaint_Load(object sender, EventArgs e)
         {
+            options = context.OrderOptions.First();
 
+            txtSalesTax.Text = options.SalesTaxRate.ToString();
+            txtShipFirstBook.Text = options.FirstBookShipCharge.ToString();
+            txtShipAddlBook.Text = options.AdditionalBookShipCharge.ToString();
         }
 
         private void btnSave_Click(object sender, EventArgs e)
         {
             if (IsValidData())
             {
+                try
+                {
+                    options.SalesTaxRate = Convert.ToDecimal(txtSalesTax.Text);
+                    options.FirstBookShipCharge = Convert.ToDecimal(txtShipFirstBook.Text);
+                    options.AdditionalBookShipCharge = Convert.ToDecimal(txtShipAddlBook.Text);
 
+                    context.OrderOptions.Update(options);
+                    context.SaveChanges();
+
+                    MessageBox.Show("Options saved.", "Success",
+                        MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                } catch (DbUpdateException ex)
+                {
+                    MessageBox.Show(ex.Message, ex.GetType().ToString());
+                }
             }
         }
 
